@@ -1,36 +1,36 @@
-# NEXUS.AI Companion — Minecraft Java
+# NEXUS-AI-Companion
 
-Starter repository for a friendly AI companion, initially targeting Minecraft Java 1.21.11.
+Primer prototipo **Fabric cliente** que conecta el chat de Minecraft con una cuenta existente de NEXUS.AI. La IA se ejecuta en el backend de NEXUS.AI; la clave de Groq nunca se incluye en el mod.
 
-## Current status (honest)
-This is a **project scaffold**, not yet a verified, installable mod release.
-- Shared companion design and safe command protocol: included.
-- Fabric / Forge / NeoForge adapter directories: included as implementation plans.
-- Minecraft launch tests and loader-specific JAR builds: **not run**.
-- Live NEXUS.AI / Groq connection: **not implemented**.
-- Bedrock port: future work.
+## Estado
 
-### Important compatibility note
-Minecraft mod loaders do not share one universal API. A single JAR cannot work across Fabric, Forge and NeoForge. Each adapter needs its own metadata, entry point, dependencies and build configuration. Also verify that the exact loader has a release for the exact Minecraft version before selecting it. If Forge does not support 1.21.11, a Forge build must target a supported Minecraft version rather than pretending it works.
+- [x] Proyecto inicial Gradle/Fabric para Minecraft Java 1.21.1.
+- [x] Comandos cliente para login, registro, chat y cierre de sesión.
+- [x] Llamadas a `/api/auth` y `/api/chat` del backend existente.
+- [ ] Compilación y prueba dentro de Minecraft real.
+- [ ] Pantalla de login segura (el comando actual puede quedar en logs).
+- [ ] Consulta del saldo exacto y renovación automática de sesión.
+- [ ] Entidad visible que siga al jugador.
+- [ ] Adaptadores Forge y NeoForge.
 
-## Planned first milestones
-1. Build and launch a minimal mod for one supported loader.
-2. Add an in-world Nexus entity with a visible name and a basic follow/stay command.
-3. Add a local chat screen and a configurable API bridge.
-4. Add Fabric, NeoForge and Forge adapters where the chosen Minecraft versions are supported.
-5. Test multiplayer/server permissions and performance.
+**Compatibilidad:** empezamos con Minecraft 1.21.1 + Fabric para tener una base concreta. No afirmamos compatibilidad con 1.21.11 ni con Forge/NeoForge hasta crear y probar esos módulos por separado.
 
-## Safety and privacy
-- Never put API keys in the mod JAR or commit them to Git.
-- The eventual API bridge should run locally or on a server and keep secrets outside the client.
-- Validate every requested action against an allowlist; ask for confirmation before destructive actions.
-- Do not send world data or chat logs to an AI service without a clear user-controlled setting.
+## Requisitos
 
-## Repository layout
-- `common/`: loader-independent design and action protocol.
-- `fabric/`, `forge/`, `neoforge/`: adapter plans and compatibility notes.
-- `docs/`: development roadmap and API protocol.
-- `scripts/`: helper script for initializing a Git repository and pushing to a newly created empty GitHub repository.
+- JDK 21
+- Gradle instalado
+- Minecraft Java 1.21.1, Fabric Loader y Fabric API
 
-## Build status
-No compiled `.jar` files are included. Do not put this folder into `mods` and expect it to launch yet.
+## Compilar
+
+Desde la raíz del repo: `gradle build`. El JAR debería aparecer en `build/libs/`. Este repositorio aún no incluye Gradle Wrapper y el build no se ha verificado en una máquina de compilación; no consideres el JAR listo hasta ejecutar y corregir el build.
+
+## Comandos
+
+- `/nexus register correo@example.com contraseña`
+- `/nexus login correo@example.com contraseña`
+- `/nexus chat hola, ¿quién eres?`
+- `/nexus credits`
+- `/nexus logout`
+
+**Seguridad:** el prototipo guarda tokens localmente en `nexus-companion-session.json`, no la contraseña. Los comandos con contraseña pueden aparecer en el historial/logs: úsalo solo en tu propio equipo y no compartas logs ni el archivo de sesión. Antes de distribuirlo, reemplazaremos el comando por una pantalla de login. Los créditos los controla el backend compartido; no se crea una cartera independiente ni se promete un bono de registro que el backend no haya configurado.
