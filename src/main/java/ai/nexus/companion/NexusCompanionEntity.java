@@ -2,11 +2,9 @@ package ai.nexus.companion;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.text.Text;
-import net.minecraft.world.World;
 
 /**
  * Client-only visual prototype. The stand is local to this client and is not
@@ -45,8 +43,7 @@ final class NexusCompanionEntity {
             companion.setPosition(client.player.getX() + 1.0, client.player.getY(), client.player.getZ());
             return true;
         }
-        World world = client.world;
-        ArmorStandEntity stand = new ArmorStandEntity(EntityType.ARMOR_STAND, world);
+        ArmorStandEntity stand = new ArmorStandEntity(EntityType.ARMOR_STAND, client.world);
         stand.setId(ENTITY_ID);
         stand.setCustomName(Text.literal("NEXUS.AI"));
         stand.setCustomNameVisible(true);
@@ -54,7 +51,7 @@ final class NexusCompanionEntity {
         stand.setInvulnerable(true);
         stand.setPosition(client.player.getX() + 1.0, client.player.getY(), client.player.getZ());
         stand.setYaw(client.player.getYaw());
-        world.addEntity(ENTITY_ID, stand);
+        client.world.addEntity(stand);
         companion = stand;
         tickCounter = 0;
         return true;
