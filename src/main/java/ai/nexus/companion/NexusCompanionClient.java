@@ -44,12 +44,12 @@ public final class NexusCompanionClient implements ClientModInitializer {
                     var client = net.minecraft.client.MinecraftClient.getInstance();
                     String world = client.world == null ? "fuera de un mundo" : "en el mundo";
                     String companion = NexusCompanionEntity.isSpawned() ? "personaje: invocado" : "personaje: no invocado";
-                    say("NEXUS.AI | cuenta: " + (NexusSession.isLoggedIn() ? "sesión guardada" : "sin sesión") + " | " + world + " | " + companion + " | versión Fabric 1.21.1");
+                    say("NEXUS.AI | cuenta: " + (NexusSession.isLoggedIn() ? "sesión guardada" : "sin sesión") + " | " + world + " | " + companion + " | versión Fabric 1.21.11");
                     return 1;
                 }))
                 .then(ClientCommandManager.literal("spawn").executes(ctx -> {
                     boolean spawned = NexusCompanionEntity.spawn();
-                    say(spawned ? "¡NEXUS.AI apareció! Es un prototipo 3D local; todavía no combate ni controla el mundo." : "Entra primero a un mundo y vuelve a usar /nexus spawn.");
+                    say(spawned ? "¡NEXUS.AI apareció! Prototipo visual local: el combate real todavía está en desarrollo." : "Entra primero a un mundo y vuelve a usar /nexus spawn.");
                     return spawned ? 1 : 0;
                 }))
                 .then(ClientCommandManager.literal("credits").executes(ctx -> {
