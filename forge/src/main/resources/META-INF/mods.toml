@@ -1,0 +1,23 @@
+modLoader="javafml"
+loaderVersion="[61,)"
+license="MIT"
+
+[[mods]]
+modId="nexus_companion"
+version="0.1.0"
+displayName="NEXUS AI Companion"
+description='''NEXUS.AI companion prototype for Minecraft Java 1.21.11 on Forge.'''
+
+[[dependencies.nexus_companion]]
+modId="forge"
+mandatory=true
+versionRange="[61.2.4,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.nexus_companion]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.21.11,1.21.12)"
+ordering="NONE"
+side="BOTH"
