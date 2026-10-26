@@ -1,28 +1,11 @@
-# AI bridge protocol (proposal)
+# NEXUS.AI API protocol
 
-The game client/server should send only the minimum required context.
+Base URL: `https://nexus.ai-nex.duckdns.org`
 
-Example request:
-```json
-{
-  "protocolVersion": 1,
-  "message": "Nexus, sígueme",
-  "worldContext": {
-    "dimension": "minecraft:overworld",
-    "nearbyBlocks": [],
-    "nearbyEntities": []
-  }
-}
-```
+- `POST /api/auth` with `{"action":"login","email":"...","password":"..."}`
+- `POST /api/auth` with `{"action":"signup","email":"...","password":"..."}`
+- Successful auth returns `access_token`, `refresh_token`, and user data when Supabase returns a session.
+- `POST /api/chat` with `Authorization: Bearer <access_token>` and `{"message":"...","characterPrompt":"..." }`
+- Chat result uses `reply`; backend errors use `error`.
 
-Example response:
-```json
-{
-  "reply": "¡Voy contigo!",
-  "actions": [
-    { "type": "FOLLOW_PLAYER" }
-  ]
-}
-```
-
-The mod must validate response shape, allowlisted action types, distances, cooldowns, permissions and server-side conditions. Never interpret model output as Java code, shell commands, or arbitrary game commands.
+Never put `GROQ_API_KEY` or the Supabase service-role key in the mod. Credits are consumed by the NEXUS.AI backend, so web and mod use the same server-side credit account. Signup may not return a session if email confirmation is enabled.
