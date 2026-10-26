@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "nexus_companion",
+  "version": "${version}",
+  "name": "NEXUS AI Companion",
+  "description": "An AI companion connected securely to your NEXUS.AI account.",
+  "authors": ["NEXUS.AI Community"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": { "client": ["ai.nexus.companion.NexusCompanionClient"] },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
