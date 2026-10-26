@@ -11,7 +11,6 @@ import net.minecraft.text.Text;
  * sent to the server, so it is not yet a server-authoritative companion.
  */
 final class NexusCompanionEntity {
-    private static final int ENTITY_ID = -271821;
     private static ArmorStandEntity companion;
     private static int tickCounter;
 
@@ -44,7 +43,6 @@ final class NexusCompanionEntity {
             return true;
         }
         ArmorStandEntity stand = new ArmorStandEntity(EntityType.ARMOR_STAND, client.world);
-        stand.setId(ENTITY_ID);
         stand.setCustomName(Text.literal("NEXUS.AI"));
         stand.setCustomNameVisible(true);
         stand.setNoGravity(true);
