@@ -13,6 +13,9 @@ import net.minecraft.text.Text;
 final class NexusCompanionEntity {
     private static ArmorStandEntity companion;
     private static int tickCounter;
+    private static final double FLOAT_AMPLITUDE = 0.18;
+    private static final int FLOAT_CYCLE_TICKS = 240;
+    private static final int FLOAT_DURATION_TICKS = 40;
 
     private NexusCompanionEntity() {}
 
@@ -29,7 +32,11 @@ final class NexusCompanionEntity {
                 double radians = Math.toRadians(player.getYaw());
                 double x = player.getX() + Math.sin(radians) * 1.25;
                 double z = player.getZ() - Math.cos(radians) * 1.25;
-                companion.setPosition(x, player.getY(), z);
+                int phase = tickCounter % FLOAT_CYCLE_TICKS;
+                double floatOffset = phase < FLOAT_DURATION_TICKS
+                    ? Math.sin((phase / (double) FLOAT_DURATION_TICKS) * Math.PI) * FLOAT_AMPLITUDE
+                    : 0.0;
+                companion.setPosition(x, player.getY() + floatOffset, z);
                 companion.setYaw(player.getYaw());
             }
         });
