@@ -1,12 +1,5 @@
-# Fabric adapter
+# Fabric
 
-Status: planned, not built or launch-tested.
+El prototipo Fabric cliente para Minecraft Java 1.21.1 está en la raíz del repositorio. Incluye comandos de autenticación y chat conectados a NEXUS.AI.
 
-Implementation checklist:
-- Confirm Fabric Loader and Fabric API releases for the chosen Minecraft version.
-- Add `fabric.mod.json` and a Fabric entrypoint.
-- Register the companion entity and client/server networking.
-- Add a minimal command such as `/nexus stay` and `/nexus follow`.
-- Build and test a development client before packaging.
-
-Do not copy a Forge or NeoForge metadata file into this module; the loader APIs are different.
+Pendiente: compilar, probar dentro del juego, añadir UI de autenticación y entidad acompañante. No copies ni publiques el archivo local de sesión.
