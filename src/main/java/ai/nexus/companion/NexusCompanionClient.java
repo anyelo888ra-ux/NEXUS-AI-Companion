@@ -43,8 +43,8 @@ public final class NexusCompanionClient implements ClientModInitializer {
                 .then(ClientCommandManager.literal("status").executes(ctx -> {
                     var client = net.minecraft.client.MinecraftClient.getInstance();
                     String world = client.world == null ? "fuera de un mundo" : "en el mundo";
-                    String companion = NexusCompanionEntity.isSpawned() ? "personaje: invocado" : "personaje: no invocado";
-                    say("NEXUS.AI | cuenta: " + (NexusSession.isLoggedIn() ? "sesión guardada" : "sin sesión") + " | " + world + " | " + companion + " | versión Fabric 1.21.11");
+                    String companion = NexusCompanionEntity.isSpawned() ? "compañero: invocado, " + NexusCompanionEntity.behaviorName() : "compañero: no invocado";
+                    say("NEXUS.AI | cuenta: " + (NexusSession.isLoggedIn() ? "sesión guardada" : "sin sesión") + " | " + world + " | " + companion + " | tarea: " + NexusCompanionEntity.taskStatus() + " | Fabric 1.21.11");
                     return 1;
                 }))
                 .then(ClientCommandManager.literal("spawn").executes(ctx -> {
@@ -52,6 +52,30 @@ public final class NexusCompanionClient implements ClientModInitializer {
                     say(spawned ? "¡NEXUS.AI apareció! Prototipo visual local: el combate real todavía está en desarrollo." : "Entra primero a un mundo y vuelve a usar /nexus spawn.");
                     return spawned ? 1 : 0;
                 }))
+                .then(ClientCommandManager.literal("behavior")
+                    .then(ClientCommandManager.literal("follow").executes(ctx -> {
+                        NexusCompanionEntity.setBehavior("follow");
+                        say("Modo: ahora te sigue.");
+                        return 1;
+                    }))
+                    .then(ClientCommandManager.literal("free").executes(ctx -> {
+                        NexusCompanionEntity.setBehavior("free_roam");
+                        say("Modo libre: explora cerca de ti y puede alejarse unos bloques.");
+                        return 1;
+                    }))
+                    .then(ClientCommandManager.literal("stay").executes(ctx -> {
+                        NexusCompanionEntity.setBehavior("stay");
+                        say("Modo quieto: NEXUS se queda en su posición.");
+                        return 1;
+                    })))
+                .then(ClientCommandManager.literal("task")
+                    .then(ClientCommandManager.argument("instruction", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            String instruction = StringArgumentType.getString(ctx, "instruction");
+                            NexusCompanionEntity.setTask(instruction);
+                            say("Tarea guardada: " + instruction + ". Ojo: la ejecución real (minar, recoger y usar inventario) aún no está implementada.");
+                            return 1;
+                        })))
                 .then(ClientCommandManager.literal("credits").executes(ctx -> {
                     say(NexusSession.isLoggedIn() ? "Tienes una sesión guardada. Usa /nexus chat <mensaje> para hablar." : "Sin sesión. Usa /nexus login <correo> <contraseña>.");
                     return 1;
