@@ -19,7 +19,7 @@ final class NexusCompanionEntity {
     static void init() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (companion == null || client.world == null || client.player == null) return;
-            if (companion.getWorld() != client.world || companion.isRemoved()) {
+            if (client.world.getEntityById(companion.getId()) != companion || companion.isRemoved()) {
                 companion = null;
                 return;
             }
@@ -38,7 +38,7 @@ final class NexusCompanionEntity {
     static boolean spawn() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null || client.player == null) return false;
-        if (companion != null && !companion.isRemoved() && companion.getWorld() == client.world) {
+        if (companion != null && !companion.isRemoved() && client.world.getEntityById(companion.getId()) == companion) {
             companion.setPosition(client.player.getX() + 1.0, client.player.getY(), client.player.getZ());
             return true;
         }
