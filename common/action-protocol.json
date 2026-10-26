@@ -1,0 +1,17 @@
+{
+  "protocolVersion": 1,
+  "allowedActions": [
+    "FOLLOW_PLAYER",
+    "STAY",
+    "SAY",
+    "LOOK_AT_PLAYER"
+  ],
+  "requiresConfirmation": [
+    "BREAK_BLOCK",
+    "PLACE_BLOCK",
+    "USE_ITEM",
+    "ATTACK_ENTITY",
+    "DROP_ITEM"
+  ],
+  "defaultPolicy": "deny_unknown_actions"
+}
