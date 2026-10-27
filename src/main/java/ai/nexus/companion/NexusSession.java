@@ -22,6 +22,8 @@ final class NexusSession {
     private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
     private static volatile String accessToken = "";
     private static volatile String refreshToken = "";
+    private static volatile String activeTicket = "";
+    private static volatile boolean cancelLoginRequested = false;
 
     private NexusSession() {}
 
@@ -46,6 +48,8 @@ final class NexusSession {
                 create.addProperty("action", "create");
                 JsonObject result = post("/api/device-auth", create, null);
                 String ticket = result.has("ticket") ? result.get("ticket").getAsString() : "";
+                activeTicket = ticket;
+                cancelLoginRequested = false;
                 String loginUrl = result.has("login_url") ? result.get("login_url").getAsString() : "";
                 if (ticket.length() < 32 || loginUrl.isBlank()) throw new IOException("El servidor no devolvió un ticket válido.");
                 String url = loginUrl + "?ticket=" + URLEncoder.encode(ticket, StandardCharsets.UTF_8);
@@ -58,6 +62,11 @@ final class NexusSession {
                 callback.accept("Se abrió la página de NEXUS.AI. Inicia sesión allí; el ticket caduca en 5 minutos.");
                 long deadline = System.currentTimeMillis() + Duration.ofMinutes(5).toMillis();
                 while (System.currentTimeMillis() < deadline) {
+                    if (cancelLoginRequested || !ticket.equals(activeTicket)) {
+                        cancelTicketOnServer(ticket);
+                        callback.accept("Ticket temporal eliminado al salir del mundo. La sesión de NEXUS.AI se conserva.");
+                        return;
+                    }
                     Thread.sleep(2000);
                     JsonObject poll = new JsonObject();
                     poll.addProperty("action", "status");
@@ -70,6 +79,7 @@ final class NexusSession {
                         refreshToken = status.has("refresh_token") && !status.get("refresh_token").isJsonNull()
                             ? status.get("refresh_token").getAsString() : "";
                         save();
+                        activeTicket = "";
                         callback.accept("¡NEXUS.AI conectado! Ya puedes usar /nexus chat <mensaje>.");
                         return;
                     }
@@ -78,8 +88,11 @@ final class NexusSession {
                         return;
                     }
                 }
+                cancelTicketOnServer(ticket);
+                activeTicket = "";
                 callback.accept("Se agotó el tiempo de vinculación. Ejecuta /nexus login otra vez.");
             } catch (Exception e) {
+                activeTicket = "";
                 callback.accept("No se pudo vincular la cuenta: " + safeMessage(e));
             }
         }, "NEXUS-device-login").start();
@@ -119,7 +132,24 @@ final class NexusSession {
         }, "NEXUS-chat").start();
     }
 
+    static void cancelBrowserLogin() {
+        cancelLoginRequested = true;
+        String ticket = activeTicket;
+        activeTicket = "";
+        if (!ticket.isBlank()) new Thread(() -> cancelTicketOnServer(ticket), "NEXUS-cancel-ticket").start();
+    }
+
+    private static void cancelTicketOnServer(String ticket) {
+        try {
+            JsonObject body = new JsonObject();
+            body.addProperty("action", "cancel");
+            body.addProperty("ticket", ticket);
+            post("/api/device-auth", body, null);
+        } catch (Exception ignored) { /* Server-side expiry remains the fallback cleanup. */ }
+    }
+
     static void logout() {
+        cancelBrowserLogin();
         accessToken = "";
         refreshToken = "";
         try { Files.deleteIfExists(sessionPath()); } catch (IOException ignored) {}
