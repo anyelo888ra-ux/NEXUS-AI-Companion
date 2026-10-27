@@ -4,8 +4,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.MinecraftClient;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -18,8 +20,8 @@ import java.util.function.Consumer;
 final class NexusSession {
     private static final String API = "https://nexus.ai-nex.duckdns.org";
     private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
-    private static String accessToken = "";
-    private static String refreshToken = "";
+    private static volatile String accessToken = "";
+    private static volatile String refreshToken = "";
 
     private NexusSession() {}
 
@@ -36,44 +38,68 @@ final class NexusSession {
         } catch (Exception ignored) { accessToken = ""; refreshToken = ""; }
     }
 
-    static void authenticate(String action, String email, String password, Consumer<String> callback) {
-        if (!email.contains("@") || password.length() < 6) {
-            callback.accept("Correo inválido o contraseña menor de 6 caracteres.");
-            return;
-        }
-        callback.accept(action.equals("signup") ? "Creando cuenta..." : "Iniciando sesión...");
+    static void browserLogin(Consumer<String> callback) {
+        callback.accept("Solicitando un ticket temporal de vinculación…");
         new Thread(() -> {
             try {
-                JsonObject body = new JsonObject();
-                body.addProperty("action", action);
-                body.addProperty("email", email);
-                body.addProperty("password", password);
-                JsonObject result = post("/api/auth", body, null);
-                if (!result.has("access_token") || result.get("access_token").isJsonNull()) {
-                    callback.accept("La autenticación no devolvió sesión. Si registraste cuenta, revisa si Supabase exige confirmar el correo.");
-                    return;
+                JsonObject create = new JsonObject();
+                create.addProperty("action", "create");
+                JsonObject result = post("/api/device-auth", create, null);
+                String ticket = result.has("ticket") ? result.get("ticket").getAsString() : "";
+                String loginUrl = result.has("login_url") ? result.get("login_url").getAsString() : "";
+                if (ticket.length() < 32 || loginUrl.isBlank()) throw new IOException("El servidor no devolvió un ticket válido.");
+                String url = loginUrl + "?ticket=" + URLEncoder.encode(ticket, StandardCharsets.UTF_8);
+                try {
+                    if (!Desktop.isDesktopSupported()) throw new IOException("Este sistema no permite abrir el navegador automáticamente.");
+                    Desktop.getDesktop().browse(URI.create(url));
+                } catch (Exception browserError) {
+                    callback.accept("Abre este enlace en tu navegador para vincular la cuenta: " + url);
                 }
-                accessToken = result.get("access_token").getAsString();
-                refreshToken = result.has("refresh_token") && !result.get("refresh_token").isJsonNull()
-                    ? result.get("refresh_token").getAsString() : "";
-                save();
-                callback.accept("¡Sesión conectada! Los chats usarán tu cuenta y los créditos compartidos de NEXUS.AI.");
+                callback.accept("Se abrió la página de NEXUS.AI. Inicia sesión allí; el ticket caduca en 5 minutos.");
+                long deadline = System.currentTimeMillis() + Duration.ofMinutes(5).toMillis();
+                while (System.currentTimeMillis() < deadline) {
+                    Thread.sleep(2000);
+                    JsonObject poll = new JsonObject();
+                    poll.addProperty("action", "status");
+                    poll.addProperty("ticket", ticket);
+                    JsonObject status = post("/api/device-auth", poll, null);
+                    String state = status.has("status") ? status.get("status").getAsString() : "pending";
+                    if ("approved".equals(state)) {
+                        if (!status.has("access_token") || status.get("access_token").isJsonNull()) throw new IOException("La autorización no devolvió una sesión.");
+                        accessToken = status.get("access_token").getAsString();
+                        refreshToken = status.has("refresh_token") && !status.get("refresh_token").isJsonNull()
+                            ? status.get("refresh_token").getAsString() : "";
+                        save();
+                        callback.accept("¡NEXUS.AI conectado! Ya puedes usar /nexus chat <mensaje>.");
+                        return;
+                    }
+                    if ("expired".equals(state)) {
+                        callback.accept("El ticket expiró. Ejecuta /nexus login para intentarlo de nuevo.");
+                        return;
+                    }
+                }
+                callback.accept("Se agotó el tiempo de vinculación. Ejecuta /nexus login otra vez.");
             } catch (Exception e) {
-                callback.accept("No se pudo conectar: " + safeMessage(e));
+                callback.accept("No se pudo vincular la cuenta: " + safeMessage(e));
             }
-        }, "NEXUS-auth").start();
+        }, "NEXUS-device-login").start();
+    }
+
+    /** Kept for compatibility with older callers; credentials are never accepted in Minecraft. */
+    static void authenticate(String action, String email, String password, Consumer<String> callback) {
+        callback.accept("Por seguridad, ya no se aceptan contraseñas dentro de Minecraft. Usa /nexus login y completa el acceso en tu navegador.");
     }
 
     static void chat(String message, Consumer<String> callback) {
         if (!isLoggedIn()) {
-            callback.accept("Primero inicia sesión: /nexus login <correo> <contraseña>.");
+            callback.accept("Primero inicia sesión: /nexus login (se abrirá el navegador).");
             return;
         }
         if (message.length() > 4000) {
             callback.accept("El mensaje supera los 4000 caracteres.");
             return;
         }
-        callback.accept("Pensando...");
+        callback.accept("Pensando…");
         new Thread(() -> {
             try {
                 JsonObject body = new JsonObject();
