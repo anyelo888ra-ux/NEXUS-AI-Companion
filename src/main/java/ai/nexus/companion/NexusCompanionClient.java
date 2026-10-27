@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.text.Text;
 
 public final class NexusCompanionClient implements ClientModInitializer {
@@ -11,6 +12,7 @@ public final class NexusCompanionClient implements ClientModInitializer {
     public void onInitializeClient() {
         NexusSession.load();
         NexusCompanionEntity.init();
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> NexusSession.cancelBrowserLogin());
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(ClientCommandManager.literal("nexus")
                 .then(ClientCommandManager.literal("login").executes(ctx -> {
@@ -59,7 +61,7 @@ public final class NexusCompanionClient implements ClientModInitializer {
                             return 1;
                         })))
                 .then(ClientCommandManager.literal("credits").executes(ctx -> {
-                    say(NexusSession.isLoggedIn() ? "Tienes una sesión guardada. Usa /nexus chat <mensaje> para hablar." : "Sin sesión. Usa /nexus login <correo> <contraseña>.");
+                    say(NexusSession.isLoggedIn() ? "Tienes una sesión guardada. Usa /nexus chat <mensaje> para hablar." : "Sin sesión. Usa /nexus login para vincular tu cuenta en el navegador.");
                     return 1;
                 }))
                 .then(ClientCommandManager.literal("chat")
