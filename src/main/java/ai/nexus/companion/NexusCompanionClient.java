@@ -13,28 +13,10 @@ public final class NexusCompanionClient implements ClientModInitializer {
         NexusCompanionEntity.init();
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(ClientCommandManager.literal("nexus")
-                .then(ClientCommandManager.literal("login")
-                    .then(ClientCommandManager.argument("credentials", StringArgumentType.greedyString())
-                        .executes(ctx -> {
-                            String[] parts = splitCredentials(StringArgumentType.getString(ctx, "credentials"));
-                            if (parts == null) {
-                                say("Uso: /nexus login <correo> <contraseña>. Si tu correo tiene @, ahora se acepta sin comillas.");
-                                return 0;
-                            }
-                            NexusSession.authenticate("login", parts[0], parts[1], NexusCompanionClient::say);
-                            return 1;
-                        })))
-                .then(ClientCommandManager.literal("register")
-                    .then(ClientCommandManager.argument("credentials", StringArgumentType.greedyString())
-                        .executes(ctx -> {
-                            String[] parts = splitCredentials(StringArgumentType.getString(ctx, "credentials"));
-                            if (parts == null) {
-                                say("Uso: /nexus register <correo> <contraseña>.");
-                                return 0;
-                            }
-                            NexusSession.authenticate("signup", parts[0], parts[1], NexusCompanionClient::say);
-                            return 1;
-                        })))
+                .then(ClientCommandManager.literal("login").executes(ctx -> {
+                    NexusSession.browserLogin(NexusCompanionClient::say);
+                    return 1;
+                }))
                 .then(ClientCommandManager.literal("logout").executes(ctx -> {
                     NexusSession.logout();
                     say("Sesión local cerrada.");
