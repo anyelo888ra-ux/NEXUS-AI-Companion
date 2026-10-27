@@ -71,7 +71,7 @@ Los comandos de comportamiento existentes actúan sobre el prototipo visual. `/n
 
 ## Autenticación y seguridad
 
-El mod ya no pide contraseñas dentro del chat de Minecraft. `/nexus login` solicita un ticket aleatorio temporal, abre la página web de vinculación y consulta el estado durante un máximo de cinco minutos. Al autorizarlo, el mod guarda la sesión local en `nexus-companion-session.json`; no compartas ese archivo.
+El mod ya no pide contraseñas dentro del chat de Minecraft. `/nexus login` solicita un ticket aleatorio temporal, abre la página web de vinculación y consulta el estado durante un máximo de cinco minutos. Al desconectarse del mundo, el mod intenta cancelar y eliminar el ticket pendiente en Supabase; si la conexión falla, el ticket igualmente caduca a los cinco minutos. La sesión local de NEXUS.AI se conserva al salir del mundo. Al autorizarlo, el mod guarda la sesión local en `nexus-companion-session.json`; no compartas ese archivo.
 
 **Configuración obligatoria del backend antes de usar este flujo:** crea la tabla con `supabase/device-auth.sql` en Supabase y añade `SUPABASE_SERVICE_ROLE_KEY` como variable de entorno secreta de servidor en Vercel. Nunca uses un prefijo `NEXT_PUBLIC_` para esa clave. La cuenta web debe iniciar sesión en `/device-auth?ticket=...` y autorizar la vinculación. Hasta configurar y probar estos pasos, el login con ticket no está listo para producción.
 
