@@ -28,12 +28,15 @@ jobs:
           gradle-version: '8.14.3'
       - name: Build Fabric prototype
         run: gradle --no-daemon build
-      - name: Upload Fabric JARs
+      - name: Generate Fabric SHA-256 checksums
+        if: success()
+        run: cd build/libs && sha256sum *.jar > SHA256SUMS.txt
+      - name: Upload Fabric JARs and checksums
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: nexus-ai-companion-fabric-jars
-          path: build/libs/*.jar
+          path: build/libs/*
           if-no-files-found: error
           retention-days: 14
 
@@ -59,11 +62,14 @@ jobs:
       - name: Build Forge 1.21.11 mod
         working-directory: forge
         run: gradle --no-daemon build
-      - name: Upload Forge JARs
+      - name: Generate Forge SHA-256 checksums
+        if: success()
+        run: cd forge/build/libs && sha256sum *.jar > SHA256SUMS.txt
+      - name: Upload Forge JARs and checksums
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: nexus-ai-companion-forge-1.21.11
-          path: forge/build/libs/*.jar
+          path: forge/build/libs/*
           if-no-files-found: error
           retention-days: 14
