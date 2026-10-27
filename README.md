@@ -6,7 +6,8 @@ Mod cliente **Fabric para Minecraft Java**, conectado a una cuenta existente de 
 
 ## Estado actual
 
-- [x] Comandos cliente para iniciar sesión, registrarse, chatear y cerrar sesión.
+- [x] Comando de login con navegador y ticket temporal (requiere configurar el backend de tickets).
+- [x] Chat y cierre de sesión locales.
 - [x] Conexión existente con `/api/auth` y `/api/chat`.
 - [x] Prototipo visual local con modos `follow`, `free` y `stay`.
 - [x] Comando de estado y registro de una instrucción de tarea.
@@ -54,8 +55,8 @@ El JAR normalmente se genera en `build/libs/`. El repositorio no incluye actualm
 
 ## Comandos existentes
 
-- `/nexus register correo@example.com contraseña`
-- `/nexus login correo@example.com contraseña`
+- `/nexus login` (abre la página web de vinculación; ticket temporal de 5 minutos)
+- `/nexus logout`
 - `/nexus chat hola, ¿quién eres?`
 - `/nexus credits`
 - `/nexus logout`
@@ -70,7 +71,9 @@ Los comandos de comportamiento existentes actúan sobre el prototipo visual. `/n
 
 ## Autenticación y seguridad
 
-Se conserva el flujo actual de `NexusSession` y el backend existente de NEXUS.AI. La sesión se guarda localmente en `nexus-companion-session.json`; no compartas ese archivo ni registros que puedan contener información sensible. Los comandos con contraseña pueden quedar en el historial o logs, así que utilízalos solo en tu propio equipo. Una pantalla de inicio de sesión segura sigue pendiente.
+El mod ya no pide contraseñas dentro del chat de Minecraft. `/nexus login` solicita un ticket aleatorio temporal, abre la página web de vinculación y consulta el estado durante un máximo de cinco minutos. Al autorizarlo, el mod guarda la sesión local en `nexus-companion-session.json`; no compartas ese archivo.
+
+**Configuración obligatoria del backend antes de usar este flujo:** crea la tabla con `supabase/device-auth.sql` en Supabase y añade `SUPABASE_SERVICE_ROLE_KEY` como variable de entorno secreta de servidor en Vercel. Nunca uses un prefijo `NEXT_PUBLIC_` para esa clave. La cuenta web debe iniciar sesión en `/device-auth?ticket=...` y autorizar la vinculación. Hasta configurar y probar estos pasos, el login con ticket no está listo para producción.
 
 Los créditos se controlan en el backend compartido; el mod no crea una cartera independiente ni garantiza créditos de bienvenida que el backend no haya configurado.
 
